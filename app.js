@@ -8,6 +8,7 @@
 
 // Bringing all the dependencies in
 const express = require('express');
+const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const exjwt = require('express-jwt');
@@ -37,13 +38,18 @@ const jwtMW = exjwt({
 let users = [
     {
         id: 1,
-        username: 'test',
-        password: 'asdf123'
+        username: 'kuly',
+        password: '123456'
     },
     {
         id: 2,
-        username: 'test2',
-        password: 'asdf12345'
+        username: 'ronaldo',
+        password: '1234567'
+    },
+    {
+        id: 3,
+        username: 'nemar',
+        password: '1234568'
     }
 ];
 
