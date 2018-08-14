@@ -8,6 +8,7 @@
 
 // Bringing all the dependencies in
 const express = require('express');
+const cors = require('cors');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
@@ -15,6 +16,63 @@ const exjwt = require('express-jwt');
 
 // Instantiating the express app
 const app = express();
+const All_User = 'SELECT * FROM user';
+
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '123456',
+    database: 'usermanager'
+});
+
+connection.connect(err => {
+    if(err){
+        return err;
+    }
+});
+
+console.log(connection);
+
+
+app.use(cors());
+
+app.get('/', (req, res) =>{
+    res.send('go to users manager');
+});
+
+app.get('/users', (req, res) =>{
+    connection.query(All_User, (err, results) => {
+        if(err){
+            return res.send(err)
+        }else{
+            return res.json({
+                data: results
+            })
+        }
+    });
+});
+
+app.get('/users/add', (req, res) =>{
+    const {username, password } = req.query;
+    const INSERT_USER = `INSERT INTO user(username, password) VALUES('${username}',' ${password}')`;
+    connection.query(INSERT_USER, (err, results) => {
+        if(err){
+            return res.send(err)
+        }
+        else res.send('added user success !')
+    })
+});
+
+app.get('/users/deleteUser', (req, res) =>{
+    const {id} = req.query;
+    const DELETE_USER = `DELETE FROM user WHERE id = ${id}`;
+    connection.query(DELETE_USER, (err, results) => {
+        if(err){
+            return res.send(err)
+        }
+        else res.send('delete user success !')
+    })
+});
 
 
 // See the react auth blog in which cors is required for access
