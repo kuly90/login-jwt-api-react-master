@@ -22,7 +22,7 @@ const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: '123456',
-    database: 'usermanager'
+    database: 'userManager'
 });
 
 connection.connect(err => {
@@ -60,6 +60,17 @@ app.get('/users/add', (req, res) =>{
             return res.send(err)
         }
         else res.send('added user success !')
+    })
+});
+
+app.get('/users/editUser', (req, res) =>{
+    const {username, password, id} = req.query;
+    const INSERT_USER = `UPDATE user SET username = '${username}', password = '${password}' WHERE id = ${id}`;
+    connection.query(INSERT_USER, (err, results) => {
+        if(err){
+            return res.send(err)
+        }
+        else res.send('edit user success !')
     })
 });
 
