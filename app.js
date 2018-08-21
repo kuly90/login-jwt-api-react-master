@@ -13,10 +13,12 @@ const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const exjwt = require('express-jwt');
+const sgMail = require('@sendgrid/mail'); //sendgrid library to send emails 
 
-// Instantiating the express app
-const app = express();
-const All_User = 'SELECT * FROM user';
+const app = express(); //alias from the express function
+
+//sendgrid api key
+sgMail.setApiKey('____YOUR___API__KEY');
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -31,16 +33,36 @@ connection.connect(err => {
     }
 });
 
-console.log(connection);
-
-
 app.use(cors());
+// Setting up bodyParser to use json and set it to req.body
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 
 app.get('/', (req, res) =>{
     res.send('go to users manager');
 });
 
+app.get('/send-email', (req,res) => {
+    
+    //Get Variables from query string in the search bar
+    const {mailTo, email, subject, message } = req.query; 
+
+    //Sendgrid Data Requirements
+    const msg = {
+        to: mailTo, 
+        from: email,
+        subject: subject,
+        text: message,
+    }
+
+    //Send Email
+    sgMail.send(msg)
+    .then((msg) => console.log(text));
+});
+
 app.get('/users', (req, res) =>{
+    const All_User = 'SELECT * FROM user';
     connection.query(All_User, (err, results) => {
         if(err){
             return res.send(err)
@@ -85,6 +107,19 @@ app.get('/users/deleteUser', (req, res) =>{
     })
 });
 
+app.get('/users/searchUser', (req, res) =>{
+    const {id,username} = req.query;
+    const SEARCH_USER = `SELECT * FROM user WHERE id LIKE '%${id}%' OR username LIKE '%${username}%'`;
+    connection.query(SEARCH_USER, (err, results) => {
+        if(err){
+            return res.send(err)
+        }else{
+            return res.json({
+                data: results
+            })
+        }
+    });
+});
 
 // See the react auth blog in which cors is required for access
 app.use((req, res, next) => {
@@ -93,9 +128,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// Setting up bodyParser to use json and set it to req.body
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // INstantiating the express-jwt middleware
 const jwtMW = exjwt({
