@@ -14,6 +14,7 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const exjwt = require('express-jwt');
 const sgMail = require('@sendgrid/mail'); //sendgrid library to send emails 
+const nodemailer = require('nodemailer');
 
 const app = express(); //alias from the express function
 
@@ -44,21 +45,49 @@ app.get('/', (req, res) =>{
 });
 
 app.get('/send-email', (req,res) => {
+    const { name, email, subject, message } = req.query;
+    nodemailer.createTestAccount((err, acount) => {
+        const htmlEmail = `
+            <h4>Contact Detail:</h4>
+            <ul>
+                <li>Name: ${name}</li>
+                <li>Email: ${email}</li>               
+            </ul>
+            <h4>Message:</h4>
+            <p>${message}</p>
+        `
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            secure: false, // true for 465, false for other ports
+            auth: {
+                user: 'tonthat90@gmail.com', // generated ethereal user
+                pass: 'hoilamchy321' // generated ethereal password
+            }
+        });
     
-    //Get Variables from query string in the search bar
-    const {mailTo, email, subject, message } = req.query; 
-
-    //Sendgrid Data Requirements
-    const msg = {
-        to: mailTo, 
-        from: email,
-        subject: subject,
-        text: message,
-    }
-
-    //Send Email
-    sgMail.send(msg)
-    .then((msg) => console.log(text));
+        // setup email data with unicode symbols
+        let mailOptions = {
+            from: '"Ly Ku 👻" <tonthat90@gmail.com>', // sender address
+            to: 'tonly01011990@gmail.com, tonthat90@gmail.com', // list of receivers
+            subject: subject, // Subject line
+            text: message, // plain text body
+            html: htmlEmail // html body
+        };
+    
+        // send mail with defined transport object
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                return console.log(error);
+            }
+            console.log('Message sent: %s', info.messageId);
+            // Preview only available when sending through an Ethereal account
+            console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    
+            // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+            // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+        });
+    })
+    
 });
 
 app.get('/users', (req, res) =>{
